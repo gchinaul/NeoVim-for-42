@@ -20,14 +20,8 @@ Inclut support complet pour C, C++, Python, Java, la Norminette, Copilot, Treesi
 
 ---
 
-## 🛠️ Installation
-
-### Prérequis
-
 - [Neovim](https://neovim.io/) **v0.8+**
 - `curl`, `git`, et un compilateur (`gcc`, `clang`, etc.)
-
-### 1. Cloner la config
 
 ```bash
 git clone https://github.com/gchinaul/NeoVim-for-42.git ~/.config/nvim
