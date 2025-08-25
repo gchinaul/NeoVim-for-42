@@ -1,0 +1,164 @@
+" === Lazy.nvim ===
+"set runtimepath^=~/.config/nvim/lazy/lazy.nvim
+"lua require("lazy").setup({})
+
+" --- Installer vim-plug si besoin ---
+if empty(glob('~/.local/share/nvim/site/autoload/plug.vim'))
+  silent !curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+" --- Plugins avec vim-plug ---
+call plug#begin('~/.vim/plugged')
+
+" --- GitHub Copilot Chat ---
+Plug 'zbirenbaum/copilot.lua'                     " Core Copilot (alternative à copilot.vim)
+Plug 'zbirenbaum/copilot-cmp'                     " Intégration avec nvim-cmp
+Plug 'CopilotC-Nvim/CopilotChat.nvim'              " Interface Chat
+Plug 'nvim-lua/plenary.nvim'                      " Dépendance requise
+
+" Plugins officiels 42
+Plug '42school/norminette'
+Plug '42paris/42header'
+
+" Autocomplétion & LSP
+Plug 'neovim/nvim-lspconfig'        " Configuration des serveurs LSP
+Plug 'hrsh7th/nvim-cmp'             " Completion engine
+Plug 'hrsh7th/cmp-nvim-lsp'         " LSP source pour nvim-cmp
+Plug 'hrsh7th/cmp-buffer'           " Buffer source
+Plug 'hrsh7th/cmp-path'             " Path source
+Plug 'hrsh7th/cmp-cmdline'          " Cmdline source
+
+" Treesitter pour une meilleure coloration syntaxique
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+
+" Ligne de statut
+Plug 'hoob3rt/lualine.nvim'
+
+" Gestionnaire d'arborescence de fichiers
+Plug 'kyazdani42/nvim-tree.lua'
+
+" Git integration
+Plug 'lewis6991/gitsigns.nvim'
+
+" Java LSP
+Plug 'mfussenegger/nvim-jdtls'
+
+call plug#end()
+
+" --- Options générales ---
+set number                      " Numéros de ligne
+set relativenumber              " Nombres relatifs
+set cursorline                  " Surligner la ligne courante
+set termguicolors               " Couleurs 24 bits
+set hidden                      " Buffers en arrière-plan
+set updatetime=300              " Mise à jour rapide
+set timeoutlen=500              " Timeout raccourcis
+set tabstop=4                  " Tabulations à 4 espaces
+set shiftwidth=4
+set expandtab                  " Convertir tabulations en espaces
+set smartindent
+set autoindent
+
+" --- Configuration de lualine (ligne de statut) ---
+lua << EOF
+require('lualine').setup {
+  options = { theme = 'gruvbox' }
+}
+EOF
+
+" --- Configuration de nvim-tree ---
+lua << EOF
+require('nvim-tree').setup {}
+EOF
+
+lua << EOF
+-- Copilot Core Setup
+require("copilot").setup({
+  suggestion = { enabled = true },
+  panel = { enabled = false },
+})
+
+-- Intégration avec nvim-cmp
+require("copilot_cmp").setup()
+
+-- Copilot Chat
+require("CopilotChat").setup({
+  show_help = "yes",
+})
+EOF
+
+" --- Configuration de gitsigns ---
+lua << EOF
+require('gitsigns').setup {}
+EOF
+
+" --- Treesitter configuration ---
+lua << EOF
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = { "c", "cpp", "java", "python", "lua" },
+  highlight = { enable = true },
+}
+EOF
+
+" --- Configuration de nvim-cmp ---
+lua << EOF
+local cmp = require'cmp'
+cmp.setup {
+  snippet = {
+    expand = function(args)
+      vim.fn["vsnip#anonymous"](args.body)
+    end,
+  },
+  mapping = {
+    ['<C-p>'] = cmp.mapping.select_prev_item(),
+    ['<C-n>'] = cmp.mapping.select_next_item(),
+    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.close(),
+    ['<CR>'] = cmp.mapping.confirm { select = true },
+  },
+  sources = {
+    { name = 'nvim_lsp' },
+    { name = 'buffer' },
+    { name = 'path' },
+  }
+}
+EOF
+
+" --- Configuration des serveurs LSP ---
+lua << EOF
+local lspconfig = require'lspconfig'
+
+-- C / C++
+lspconfig.clangd.setup{}
+
+-- Java
+lspconfig.jdtls.setup{}
+
+-- Python (optionnel)
+lspconfig.pyright.setup{}
+EOF
+
+" --- Raccourcis pour diviser les fenêtres ---
+nnoremap <C-h> :split<CR>
+nnoremap <C-v> :vsplit<CR>
+
+" --- Autoheader 42header ---
+autocmd BufNewFile,BufRead *.c,*.h,*.cpp,*.hpp 42header
+
+" --- Norminette à la sauvegarde ---
+autocmd BufWritePost *.c,*.h,*.cpp,*.hpp :Norminette
+
+" --- Indentation C/C++ spécifique ---
+autocmd FileType c,cpp setlocal tabstop=4 shiftwidth=4 expandtab smartindent cindent
+
+" --- Mode commande pour quitter proprement ---
+command! WQ wq
+command! W w
+command! Q q
+
+lua require("plugins")
+nnoremap <C-n> :NvimTreeToggle<CR>
+
